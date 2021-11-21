@@ -58,7 +58,8 @@ class QStrategy(IStrategy):
         return c
 
     def make_mild(self, epsilon):
-        c = self.copy()
+        c = self.__class__(self.epsilon, self.rows, self.cols)
+        c.q = self.q
         c.epsilon = epsilon
         return c
 
@@ -86,6 +87,7 @@ class RandomAgent(IStrategy):
 class DuelingDQN(nn.Module):
     def __init__(self, output, device, lr):
         super(DuelingDQN, self).__init__()
+        self.actions_count = output
         self.features_layer = nn.Sequential(
             nn.Conv2d(1, 8, kernel_size=3, padding=1, padding_mode='zeros'),
             nn.BatchNorm2d(8, eps=0.001),
@@ -101,6 +103,7 @@ class DuelingDQN(nn.Module):
         ).to(device)
         self.value_stream = nn.Linear(64, 1).to(device)
         self.advantage_stream = nn.Linear(64, output).to(device)
+        self.device = device
         self.loss = nn.MSELoss()
         self.optim = torch.optim.Adam(
             list(self.features_layer.parameters()) + list(self.value_stream.parameters()) + list(self.advantage_stream.parameters()),
@@ -108,27 +111,40 @@ class DuelingDQN(nn.Module):
         )
 
     def forward(self, x):
-        features = self.feauture_layer(x)
+        x = torch.tensor(x, dtype=torch.float32, device=self.device)
+        features = self.features_layer(x)
         values = self.value_stream(features)
         advantages = self.advantage_stream(features)
         q_vals = values + (advantages - advantages.mean())
 
         return q_vals
 
+    def actions_proba(self, state, epsilon=0) -> torch.Tensor:
+        q_values = self.forward(state)
+        weights = torch.softmax(q_values, -1)
+        return (1 - epsilon) * weights + epsilon / self.actions_count
+
     def update_q(self, state, action, done, reward, gamma, next_state):
-        s = torch.tensor(state, dtype=torch.float32, device=self.device)
-        action = torch.tensor(action, dtype=torch.int32)
+        target = torch.tensor(reward, dtype=torch.float32, device=self.device)
         with torch.no_grad():
-            next_s = torch.tensor(next_state, dtype=torch.float32, device=self.device)
             not_done = 1 - torch.tensor(done, dtype=torch.int32)
-            next_q = self.forward(next_s).max(dim=-1).values * not_done
-            target = (torch.tensor(reward, dtype=torch.float32) + gamma * next_q).to(self.device)
-        q = self.forward(s).gather(-1, action)
+            next_q = self.forward(next_state).max(dim=-1).values * not_done
+            target += gamma * next_q
+        action = torch.tensor(action, dtype=torch.int32)
+        q = self.forward(state).gather(-1, action)
         loss = self.loss(q, target)
         self.optim.zero_grad()
         loss.backward()
         self.optim.step()
 
+    def update_q_outside_target(self, states, actions, targets):
+        action = torch.tensor(actions, dtype=torch.int64, device=self.device)
+        q = self.forward(states.to(self.device))
+        q = q.gather(-1, action)
+        loss = self.loss(q, targets.to(self.device))
+        self.optim.zero_grad()
+        loss.backward()
+        self.optim.step()
 
 # class DQNAgent(QStrategy):
 #     def __init__(self, epsilon, rows, cols):

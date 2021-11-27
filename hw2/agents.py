@@ -84,10 +84,73 @@ class RandomAgent(IStrategy):
         return possible_actions[np.random.randint(len(possible_actions))]
 
 
-class DuelingDQN(nn.Module):
+class BaseDQN(nn.Module):
     def __init__(self, output, device, lr):
-        super(DuelingDQN, self).__init__()
+        super(BaseDQN, self).__init__()
         self.actions_count = output
+        self.device = device
+        self.loss = nn.MSELoss()
+        self.optim = torch.optim.Adam(
+            list(self.features_layer.parameters()) + list(self.value_stream.parameters()) + list(self.advantage_stream.parameters()),
+            lr=lr, weight_decay=1e-5
+        )
+
+    def actions_proba(self, state, epsilon=0) -> torch.Tensor:
+        q_values = self.forward(state)
+        weights = torch.softmax(q_values, -1)
+        return (1 - epsilon) * weights + epsilon / self.actions_count
+
+    def update_q(self, state, action, done, reward, gamma, next_state):
+        target = reward.to(self.device)
+        with torch.no_grad():
+            not_done = (1 - done)
+            next_q = self.forward(next_state).max(dim=-1).values.unsqueeze(-1)
+            next_q = next_q * not_done
+            target += gamma * next_q
+        action = action.to(self.device)
+        q = self.forward(state).gather(-1, action)
+        loss = self.loss(q, target)
+        self.optim.zero_grad()
+        loss.backward()
+        self.optim.step()
+
+    def update_q_outside_target(self, states, actions, targets):
+        action = actions.to(self.device)
+        q = self.forward(states.to(self.device))
+        q = q.gather(-1, action)
+        loss = self.loss(q, targets.to(self.device))
+        self.optim.zero_grad()
+        loss.backward()
+        self.optim.step()
+
+
+class DQN(BaseDQN):
+    def __init__(self, output, device, lr):
+        super(DQN, self).__init__( output, device, lr)
+        self.model = nn.Sequential(
+            nn.Conv2d(1, 8, kernel_size=3, padding=1, padding_mode='zeros'),
+            nn.BatchNorm2d(8, eps=0.001),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(8, 16, kernel_size=(1, 1)),
+            nn.BatchNorm2d(16, eps=0.001),
+            nn.ReLU(inplace=True),
+            nn.Flatten(),
+            nn.Linear(in_features=16*3*3, out_features=128, bias=True),
+            nn.ReLU(),
+            nn.Linear(128, 64),
+            nn.ReLU(),
+            nn.Linear(64, output)
+        ).to(device)
+
+    def forward(self, x):
+        x = x.to(self.device)
+        results = self.model(x)
+        return results
+
+
+class DuelingDQN(BaseDQN):
+    def __init__(self, output, device, lr):
+        super(DuelingDQN, self).__init__(output, device, lr)
         self.features_layer = nn.Sequential(
             nn.Conv2d(1, 8, kernel_size=3, padding=1, padding_mode='zeros'),
             nn.BatchNorm2d(8, eps=0.001),
@@ -103,15 +166,9 @@ class DuelingDQN(nn.Module):
         ).to(device)
         self.value_stream = nn.Linear(64, 1).to(device)
         self.advantage_stream = nn.Linear(64, output).to(device)
-        self.device = device
-        self.loss = nn.MSELoss()
-        self.optim = torch.optim.Adam(
-            list(self.features_layer.parameters()) + list(self.value_stream.parameters()) + list(self.advantage_stream.parameters()),
-            lr=lr
-        )
 
     def forward(self, x):
-        x = torch.tensor(x, dtype=torch.float32, device=self.device)
+        x = x.to(self.device)
         features = self.features_layer(x)
         values = self.value_stream(features)
         advantages = self.advantage_stream(features)
@@ -119,32 +176,28 @@ class DuelingDQN(nn.Module):
 
         return q_vals
 
-    def actions_proba(self, state, epsilon=0) -> torch.Tensor:
-        q_values = self.forward(state)
-        weights = torch.softmax(q_values, -1)
-        return (1 - epsilon) * weights + epsilon / self.actions_count
 
-    def update_q(self, state, action, done, reward, gamma, next_state):
-        target = torch.tensor(reward, dtype=torch.float32, device=self.device)
+class DQNPlayerWrapper:
+    def __init__(self, env, player: DuelingDQN):
+        self.env = env
+        self.player = player
+
+    def _get_predict(self):
+        s = self.env.getPlayerBoard()
+        s_torch = torch.tensor(s, dtype=torch.float32).reshape(1, 1, self.env.n_rows, self.env.n_cols)
         with torch.no_grad():
-            not_done = 1 - torch.tensor(done, dtype=torch.int32)
-            next_q = self.forward(next_state).max(dim=-1).values * not_done
-            target += gamma * next_q
-        action = torch.tensor(action, dtype=torch.int32)
-        q = self.forward(state).gather(-1, action)
-        loss = self.loss(q, target)
-        self.optim.zero_grad()
-        loss.backward()
-        self.optim.step()
+            return self.player.forward(s_torch).cpu().squeeze()
 
-    def update_q_outside_target(self, states, actions, targets):
-        action = torch.tensor(actions, dtype=torch.int64, device=self.device)
-        q = self.forward(states.to(self.device))
-        q = q.gather(-1, action)
-        loss = self.loss(q, targets.to(self.device))
-        self.optim.zero_grad()
-        loss.backward()
-        self.optim.step()
+    def best_next_step(self, state, possible_actions):
+        q_values = self._get_predict()
+        action = int(q_values.argmax())
+        return self.env.action_from_int(action)
+
+    def actions_proba(self, state):
+        q_values = self._get_predict()
+        weights = q_values.numpy()
+        # weights = torch.softmax(q_values, -1).numpy()
+        return {self.env.action_from_int(a): w for a, w in enumerate(weights)}
 
 # class DQNAgent(QStrategy):
 #     def __init__(self, epsilon, rows, cols):

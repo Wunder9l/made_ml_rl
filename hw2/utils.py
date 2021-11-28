@@ -54,20 +54,28 @@ def q_learning_train_one_episode(env, player: QStrategy, epsilon, gamma, alpha, 
 
 
 class ReplayBuffer:
-    def __init__(self, size, prioritize):
+    def __init__(self, size, prioritize, finishing_actions):
         self.buffer = deque(maxlen=size)
         self.priorities = deque(maxlen=size)
         self.priorities_enabled = prioritize
+        self.finishing_actions = finishing_actions
+        self.is_done = deque(maxlen=size)
 
     def save(self, state, action, is_finished, reward, next_state, target, q_value):
         self.buffer.append((state, action, is_finished, reward, next_state, target))
         self.priorities.append(abs((target - q_value).item()))
+        self.is_done.append(int(is_finished))
 
     def get_batch(self, batch_size):
         if self.priorities_enabled:
             weights = np.array(self.priorities)
             weights += weights.mean()
             weights /= sum(weights)
+            # dones = np.array(self.is_done)
+            # total, end_cnt = len(self.is_done), dones.sum()
+            # w_e = self.finishing_actions / end_cnt if end_cnt > 0 else 0
+            # w_ne = (1 - self.finishing_actions) / (total - end_cnt) if total > end_cnt else 0
+            # weights = (w_e - w_ne) * dones + w_ne
         else:
             weights = None
         indices = np.random.choice(len(self.buffer), size=batch_size, p=weights)
@@ -96,7 +104,7 @@ class ReplayBuffer:
         return states, actions, dones, rewards, next_states, targets
 
 
-def dqn_play_one_episode(env: TicTacToe, player: DuelingDQN, epsilon, buffer: ReplayBuffer, gamma, stats: Stats = None):
+def dqn_play_one_episode(env: TicTacToe, player: agents.BaseDQN, epsilon, buffer: ReplayBuffer, gamma, stats: Stats = None):
     env.reset()
     s = env.getPlayerBoard().reshape(1, env.n_rows, env.n_cols)
     prev_stage = None
@@ -139,52 +147,86 @@ def dqn_play_one_episode(env: TicTacToe, player: DuelingDQN, epsilon, buffer: Re
 class DQNStats:
     def __init__(self):
         self.targets = []
+        self.max_targets = []
+        self.min_targets = []
         self.rewards = []
+        self.max_rewards = []
+        self.min_rewards = []
         self.dones = []
         self.wrong = []
         self.wins = []
         self.looses = []
+        self.draws = []
 
-    def update(self, states, actions, is_done, rewards, next_states, targets):
+    def update(self, stats):
+        self.targets.append(np.mean(stats.targets))
+        self.max_targets.append(np.max(stats.max_targets))
+        self.min_targets.append(np.max(stats.min_targets))
+        self.rewards.append(np.mean(stats.rewards))
+        self.max_rewards.append(np.max(stats.max_rewards))
+        self.min_rewards.append(np.max(stats.min_rewards))
+        self.dones.append(sum(stats.dones))
+        self.wrong.append(sum(stats.wrong))
+        self.wins.append(sum(stats.wins))
+        self.looses.append(sum(stats.looses))
+        self.draws.append(sum(stats.draws))
+
+    def update_batch(self, states, actions, is_done, rewards, next_states, targets):
         self.targets.append(float(targets.mean()))
+        self.max_targets.append(float(targets.max()))
+        self.min_targets.append(float(targets.min()))
         self.rewards.append(float(rewards.mean()))
+        self.max_rewards.append(float(rewards.max()))
+        self.min_rewards.append(float(rewards.min()))
         self.dones.append(int(is_done.sum()))
         self.wrong.append(int((rewards < -5).sum()))
         self.wins.append(int((rewards > 0.5).sum()))
         self.looses.append(int(((rewards < -.5) & (rewards > -2)).sum()))
+        self.draws.append(int(((rewards > -.5) & (rewards < 0.5) & (is_done)).sum()))
+
+    def get_stats(self):
+        return list(range(len(self.targets))), {
+            'reward': self.rewards,
+            'max_reward': self.max_rewards,
+            'min_reward': self.min_rewards,
+            'target': self.targets,
+            'max_target': self.max_targets,
+            'min_target': self.min_targets,
+            'is_done': self.dones,
+            'wrong': self.wrong,
+            'wins': self.wins,
+            'looses': self.looses,
+            'draws': self.draws,
+        }
 
     def plot(self):
         import pandas as pd
         import plotly.express as px
-        df = pd.DataFrame({
-            'epoch': list(range(len(self.targets))),
-            'reward': self.rewards,
-            'target': self.targets,
-            'dones': self.dones,
-            'wrong': self.wrong,
-            'wins': self.wins,
-            'looses': self.looses,
-        })
+        x, y = self.get_stats()
+        y['epoch'] = x
+        df = pd.DataFrame(y)
         px.line(df, x='epoch', y=list(set(df.columns) - {'epoch'})).show()
 
 
-def duelling_train(epochs, episodes_per_epoch, buffer_size, env, agent: agents.BaseDQN,
+def dqn_train(epochs, episodes_per_epoch, buffer_size, env, agent: agents.BaseDQN,
                    epsilon, gamma, batch_size, trains_per_epoch, snapshots_number, snapshot_games,
-                   prioritize=False, do_plot=False):
+                   prioritize=False, do_plot=False, dump_model_filename='dqn.data'):
     snapshot_each = epochs // snapshots_number if snapshots_number else int(1e12)
     snapshots = {}
     stats = Stats()
-    new_stats = DQNStats()
+    train_stats = DQNStats()
+    best_score = 0.0
     for i in trange(epochs):
-        buffer = ReplayBuffer(buffer_size, prioritize)
+        buffer = ReplayBuffer(buffer_size, prioritize, finishing_actions=0.3 + 0.7 * (epochs - i)/epochs)
         for _ in range(episodes_per_epoch):
             dqn_play_one_episode(env, agent, epsilon, buffer, gamma, stats)
+        new_stats = DQNStats()
         for _ in range(trains_per_epoch):
             states, actions, is_done, rewards, next_states, targets = buffer.get_batch(batch_size)
-            if do_plot:
-                new_stats.update(states, actions, is_done, rewards, next_states, targets)
-            agent.update_q(states, actions, is_done, rewards, gamma, next_states)
-            # agent.update_q_outside_target(states, actions, targets)
+            new_stats.update_batch(states, actions, is_done, rewards, next_states, targets)
+            # agent.update_q(states, actions, is_done, rewards, gamma, next_states)
+            agent.update_q_outside_target(states, actions, targets)
+        train_stats.update(new_stats)
         if i % snapshot_each == 0 and snapshots_number:
             wins = 0
             player = agents.DQNPlayerWrapper(env, agent)
@@ -192,15 +234,20 @@ def duelling_train(epochs, episodes_per_epoch, buffer_size, env, agent: agents.B
             for _ in range(snapshot_games):
                 winner = play_one_episode(env, player, opponent)
                 wins += int(winner == player)
+            wins_ratio = wins / snapshot_games
             snapshots[i] = {
                 'q_diff': stats.q_diff,
                 'wrong_actions': stats.wrong_actions,
-                'wins_ratio': wins / snapshot_games,
+                'wins_ratio': wins_ratio,
             }
+            if wins_ratio > best_score:
+                torch.save(agent, dump_model_filename)
+                best_score = wins_ratio
             stats = Stats()
     if do_plot:
-        new_stats.plot()
-    return snapshots
+        train_stats.plot()
+    print(f'Best score: {100 * best_score}% wins ratio saved to {dump_model_filename}')
+    return snapshots, train_stats
 
 
 def play_one_episode(env, player_a, player_b):

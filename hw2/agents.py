@@ -90,10 +90,6 @@ class BaseDQN(nn.Module):
         self.actions_count = output
         self.device = device
         self.loss = nn.MSELoss()
-        self.optim = torch.optim.Adam(
-            list(self.features_layer.parameters()) + list(self.value_stream.parameters()) + list(self.advantage_stream.parameters()),
-            lr=lr, weight_decay=1e-5
-        )
 
     def actions_proba(self, state, epsilon=0) -> torch.Tensor:
         q_values = self.forward(state)
@@ -123,24 +119,39 @@ class BaseDQN(nn.Module):
         loss.backward()
         self.optim.step()
 
+#         self.model = nn.Sequential(
+#             nn.Conv2d(1, 8, kernel_size=3, padding=1, padding_mode='zeros'),
+#             nn.ReLU(inplace=True),
+#             nn.Conv2d(8, 16, kernel_size=2),
+#             nn.ReLU(inplace=True),
+#             nn.Conv2d(16, 32, kernel_size=2),
+#             nn.ReLU(inplace=True),
+#             nn.Flatten(),
+#             nn.Linear(in_features=32, out_features=64, bias=True),
+#             nn.ReLU(),
+#             nn.Linear(64, output)
+#         ).to(device)
 
 class DQN(BaseDQN):
     def __init__(self, output, device, lr):
-        super(DQN, self).__init__( output, device, lr)
+        super(DQN, self).__init__(output, device, lr)
         self.model = nn.Sequential(
             nn.Conv2d(1, 8, kernel_size=3, padding=1, padding_mode='zeros'),
             nn.BatchNorm2d(8, eps=0.001),
             nn.ReLU(inplace=True),
-            nn.Conv2d(8, 16, kernel_size=(1, 1)),
+            nn.Conv2d(8, 16, kernel_size=3, padding=1, padding_mode='zeros'),
             nn.BatchNorm2d(16, eps=0.001),
             nn.ReLU(inplace=True),
+            nn.Conv2d(16, 32, kernel_size=(1, 1)),
+            nn.ReLU(inplace=True),
             nn.Flatten(),
-            nn.Linear(in_features=16*3*3, out_features=128, bias=True),
+            nn.Linear(in_features=32*output, out_features=128, bias=True),
             nn.ReLU(),
             nn.Linear(128, 64),
             nn.ReLU(),
             nn.Linear(64, output)
         ).to(device)
+        self.optim = torch.optim.Adam(self.model.parameters(), lr=lr, weight_decay=1e-5)
 
     def forward(self, x):
         x = x.to(self.device)
@@ -159,13 +170,18 @@ class DuelingDQN(BaseDQN):
             nn.BatchNorm2d(16, eps=0.001),
             nn.ReLU(inplace=True),
             nn.Flatten(),
-            nn.Linear(in_features=16*3*3, out_features=128, bias=True),
+            nn.Linear(in_features=16*output, out_features=128, bias=True),
             nn.ReLU(),
             nn.Linear(128, 64),
             nn.ReLU(),
         ).to(device)
         self.value_stream = nn.Linear(64, 1).to(device)
         self.advantage_stream = nn.Linear(64, output).to(device)
+        self.optim = torch.optim.Adam(
+            list(self.features_layer.parameters()) + list(self.value_stream.parameters()) + list(
+                self.advantage_stream.parameters()),
+            lr=lr, weight_decay=1e-5
+        )
 
     def forward(self, x):
         x = x.to(self.device)
@@ -178,7 +194,7 @@ class DuelingDQN(BaseDQN):
 
 
 class DQNPlayerWrapper:
-    def __init__(self, env, player: DuelingDQN):
+    def __init__(self, env, player: BaseDQN):
         self.env = env
         self.player = player
 

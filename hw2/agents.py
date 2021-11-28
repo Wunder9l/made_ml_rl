@@ -4,6 +4,7 @@ from itertools import product
 import numpy as np
 from abc import abstractmethod, ABCMeta
 from collections import defaultdict
+import pickle
 
 import torch
 from torch import nn
@@ -78,9 +79,30 @@ class QStrategy(IStrategy):
         self.q[(state, action)] += alpha * rel * (target - self.q[(state, action)])
         return self.q[(state, action)] - prev_value
 
+    def dump(self, filename):
+        with open(filename, 'wb') as fo:
+            data = {
+                'rows': self.rows,
+                'cols': self.cols,
+                'epsilon': self.epsilon,
+                'q': dict(self.q)
+            }
+            pickle.dump(data, fo)
+
+    @staticmethod
+    def load(filename):
+        with open(filename, 'rb') as fi:
+            data = pickle.load(fi)
+            agent = QStrategy(data['epsilon'], data['rows'], data['cols'])
+            agent.q.update(data['q'])
+            return agent
+
+
 
 class RandomAgent(IStrategy):
     def best_next_step(self, s, possible_actions):
+        if len(possible_actions) <= 0:
+            raise RuntimeError()
         return possible_actions[np.random.randint(len(possible_actions))]
 
 
@@ -119,18 +141,6 @@ class BaseDQN(nn.Module):
         loss.backward()
         self.optim.step()
 
-#         self.model = nn.Sequential(
-#             nn.Conv2d(1, 8, kernel_size=3, padding=1, padding_mode='zeros'),
-#             nn.ReLU(inplace=True),
-#             nn.Conv2d(8, 16, kernel_size=2),
-#             nn.ReLU(inplace=True),
-#             nn.Conv2d(16, 32, kernel_size=2),
-#             nn.ReLU(inplace=True),
-#             nn.Flatten(),
-#             nn.Linear(in_features=32, out_features=64, bias=True),
-#             nn.ReLU(),
-#             nn.Linear(64, output)
-#         ).to(device)
 
 class DQN(BaseDQN):
     def __init__(self, output, device, lr):

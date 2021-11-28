@@ -14515,14 +14515,14 @@ a.anchor-link {
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[1]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[26]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">gym</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
 <span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">my_env</span><span class="o">,</span> <span class="nn">agents</span><span class="o">,</span> <span class="nn">utils</span>
+<span class="kn">import</span> <span class="nn">my_env</span><span class="o">,</span> <span class="nn">agents</span><span class="o">,</span> <span class="nn">utils</span><span class="o">,</span> <span class="nn">rollout</span>
 <span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">trange</span>
 <span class="kn">from</span> <span class="nn">importlib</span> <span class="kn">import</span> <span class="n">reload</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
@@ -14533,6 +14533,7 @@ a.anchor-link {
 <span class="kn">import</span> <span class="nn">matplotlib</span> <span class="k">as</span> <span class="nn">mpl</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time_ns</span>
 <span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">choice</span>
 
 <span class="kn">import</span> <span class="nn">plotly.io</span> <span class="k">as</span> <span class="nn">pio</span>
@@ -14711,12 +14712,10 @@ $$Q(s, a) = (1 - \alpha) Q(s, a) + \alpha \frac{\pi(a|s)}{b(a|s)}[r + \gamma \ma
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[6]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[40]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">pickle</span>
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;q_agent_q_function.data&quot;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fo</span><span class="p">:</span>
-    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">agent</span><span class="o">.</span><span class="n">q</span><span class="p">),</span> <span class="n">fo</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">agent</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="s2">&quot;q_agent.data&quot;</span><span class="p">)</span>
 </pre></div>
 
      </div>
@@ -15495,7 +15494,7 @@ $$Q(s, a) = (1 - \alpha) Q(s, a) + \alpha \frac{\pi(a|s)}{b(a|s)}[r + \gamma \ma
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[19]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[23]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">plot_utils</span> <span class="kn">import</span> <span class="n">plot_test_game</span>
@@ -15630,7 +15629,185 @@ $$Q(s, a) = (1 - \alpha) Q(s, a) + \alpha \frac{\pi(a|s)}{b(a|s)}[r + \gamma \ma
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<p>Видно, как крестики разыграли достаточно хитрую ловушку для ноликов.</p>
+<h1 id="%D0%A7%D0%B0%D1%81%D1%82%D1%8C-3">&#1063;&#1072;&#1089;&#1090;&#1100; 3<a class="anchor-link" href="#%D0%A7%D0%B0%D1%81%D1%82%D1%8C-3">&#182;</a></h1>
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="Rollouts">Rollouts<a class="anchor-link" href="#Rollouts">&#182;</a></h2><p>Возьмем базовую версию агента сначала рандомного, затем полученного из первого пункта и сравним, насколько лучше играет агент с роллаутами</p>
+
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[37]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">plot_rollouts</span><span class="p">(</span><span class="n">rollouts_per_state</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span> <span class="n">times</span><span class="p">):</span>
+    <span class="n">plots_cnt</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">make_subplots</span><span class="p">(</span>
+        <span class="n">rows</span><span class="o">=</span><span class="n">plots_cnt</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">subplot_titles</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Количество побед по 100 партиям агента с роллаутами против агента без&quot;</span><span class="p">,</span> 
+            <span class="s2">&quot;Время игры 100 партий&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="n">fig</span><span class="o">.</span><span class="n">add_trace</span><span class="p">(</span><span class="n">go</span><span class="o">.</span><span class="n">Scatter</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">rollouts_per_state</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">results</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;win rate&#39;</span><span class="p">),</span> 
+                  <span class="n">row</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">add_trace</span><span class="p">(</span><span class="n">go</span><span class="o">.</span><span class="n">Scatter</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">rollouts_per_state</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">times</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;seconds&#39;</span><span class="p">),</span> 
+                  <span class="n">row</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">fig</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span>
+        <span class="n">height</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">showlegend</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">title_text</span><span class="o">=</span><span class="s2">&quot;Статистика агента с роллаутами против агента без&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">plots_cnt</span><span class="p">):</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">update_xaxes</span><span class="p">(</span><span class="n">title_text</span><span class="o">=</span><span class="s2">&quot;rollouts cnt&quot;</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="n">r</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">update_yaxes</span><span class="p">(</span><span class="n">title_text</span><span class="o">=</span><span class="s2">&quot;win rate&quot;</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">update_yaxes</span><span class="p">(</span><span class="n">title_text</span><span class="o">=</span><span class="s2">&quot;seconds&quot;</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[38]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">play_rollouts</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">agent_factory</span><span class="p">,</span> <span class="n">rollouts_per_state</span><span class="p">):</span>
+    <span class="n">results</span><span class="p">,</span> <span class="n">times</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">rollout_cnt</span> <span class="ow">in</span> <span class="n">rollouts_per_state</span><span class="p">:</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">time_ns</span><span class="p">()</span>
+        <span class="n">wins</span><span class="p">,</span> <span class="n">games</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">100</span>
+        <span class="n">rollout_player</span> <span class="o">=</span> <span class="n">rollout</span><span class="o">.</span><span class="n">RolloutPlayer</span><span class="p">(</span>
+            <span class="n">env</span><span class="p">,</span> <span class="n">agent_factory</span><span class="p">(),</span> <span class="n">rollouts_per_state</span><span class="o">=</span><span class="n">rollout_cnt</span><span class="p">,</span> <span class="n">ucb_c</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">is_stochastic</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+        <span class="n">opponent</span> <span class="o">=</span> <span class="n">agent_factory</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">games</span><span class="p">):</span>
+            <span class="n">winner</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">play_one_episode</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">rollout_player</span><span class="p">,</span> <span class="n">opponent</span><span class="p">)</span>
+            <span class="n">wins</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="n">winner</span> <span class="o">==</span> <span class="n">rollout_player</span><span class="p">)</span>
+        <span class="n">times</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">time_ns</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span><span class="o">/</span><span class="mf">1e9</span><span class="p">)</span>
+        <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">wins</span> <span class="o">/</span> <span class="n">games</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">results</span><span class="p">,</span> <span class="n">times</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[41]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">reload</span><span class="p">(</span><span class="n">my_env</span><span class="p">),</span> <span class="n">reload</span><span class="p">(</span><span class="n">agents</span><span class="p">),</span> <span class="n">reload</span><span class="p">(</span><span class="n">utils</span><span class="p">)</span>
+<span class="n">N_ROWS</span><span class="p">,</span> <span class="n">N_COLS</span><span class="p">,</span> <span class="n">N_WINS</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span>
+<span class="n">env</span> <span class="o">=</span> <span class="n">my_env</span><span class="o">.</span><span class="n">TicTacToe</span><span class="p">(</span><span class="n">N_ROWS</span><span class="p">,</span> <span class="n">N_COLS</span><span class="p">,</span> <span class="n">N_WINS</span><span class="p">)</span>
+
+<span class="n">rollouts_per_state</span> <span class="o">=</span> <span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">70</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">800</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="n">results</span><span class="p">,</span> <span class="n">times</span> <span class="o">=</span> <span class="n">play_rollouts</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">agents</span><span class="o">.</span><span class="n">RandomAgent</span><span class="p">,</span> <span class="n">rollouts_per_state</span><span class="p">)</span>
+<span class="n">plot_rollouts</span><span class="p">(</span><span class="n">rollouts_per_state</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span> <span class="n">times</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output " data-mime-type="text/html">
+<iframe
+    scrolling="no"
+    width="100%"
+    height="1020"
+    src="iframe_figures/figure_41.html"
+    frameborder="0"
+    allowfullscreen
+></iframe>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[42]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">reload</span><span class="p">(</span><span class="n">my_env</span><span class="p">),</span> <span class="n">reload</span><span class="p">(</span><span class="n">agents</span><span class="p">),</span> <span class="n">reload</span><span class="p">(</span><span class="n">utils</span><span class="p">)</span>
+<span class="n">q_agent_factory</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">agents</span><span class="o">.</span><span class="n">QStrategy</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;q_agent.data&#39;</span><span class="p">)</span>
+
+<span class="n">N_ROWS</span><span class="p">,</span> <span class="n">N_COLS</span><span class="p">,</span> <span class="n">N_WINS</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span>
+<span class="n">env</span> <span class="o">=</span> <span class="n">my_env</span><span class="o">.</span><span class="n">TicTacToe</span><span class="p">(</span><span class="n">N_ROWS</span><span class="p">,</span> <span class="n">N_COLS</span><span class="p">,</span> <span class="n">N_WINS</span><span class="p">)</span>
+<span class="n">rollouts_per_state</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">70</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+<span class="n">results</span><span class="p">,</span> <span class="n">times</span> <span class="o">=</span> <span class="n">play_rollouts</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">q_agent_factory</span><span class="p">,</span> <span class="n">rollouts_per_state</span><span class="p">)</span>
+<span class="n">plot_rollouts</span><span class="p">(</span><span class="n">rollouts_per_state</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span> <span class="n">times</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output " data-mime-type="text/html">
+<iframe
+    scrolling="no"
+    width="100%"
+    height="1020"
+    src="iframe_figures/figure_42.html"
+    frameborder="0"
+    allowfullscreen
+></iframe>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p>Видимо Q-агент на сетке 3x3 уже и так весьма хорошо обучен, ему выигрыш ролауты не дают.</p>
 
 </div>
 </div>

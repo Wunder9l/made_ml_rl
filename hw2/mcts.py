@@ -1,3 +1,4 @@
+import collections
 from dataclasses import dataclass
 from typing import List, Tuple, Dict
 
@@ -31,6 +32,15 @@ class Node:
     def select_action(self, ucb_c):
         actions, probs = self.get_proba(ucb_c)
         return np.random.choice(actions, p=probs)
+
+    def merge(self, node):
+        assert self.state_as_string == node.state_as_string
+        action_map = {a.action: a for a in self.actions}
+        for a in node.actions:
+            if a.action in action_map:
+                action_map[a.action].stat.update(a.stat)
+            else:
+                self.actions.append(a)
 
 
 @dataclass
@@ -120,24 +130,20 @@ class MonteCarloTreeSearch(IStrategy):
             defeats += st.defeats
         return wins, defeats
 
-    def _simulate_from_node(self, node, rollout_player, opponent):
-        players = {
-            node.cur_turn: rollout_player,
-            -node.cur_turn: opponent
-        }
-        is_finished = False
-        self.env.load(node.state, node.cur_turn)
-        while not is_finished:
-            player = players[self.env.curTurn]
-            s, actions = self.env.getHash(), self.env.getEmptySpaces()
-            a = player.best_next_step(s, actions)
-            (s, actions, _), reward, is_finished, _ = self.env.step(a)
-        if reward > EPSILON:
-            return rollout_player
-        elif reward < -EPSILON:
-            return rollout_player if opponent == player else opponent
-        else:
-            return None
+    def find_nodes(self, state_hash):
+        found_nodes = []
+        deque = collections.deque()
+        deque.append(self.root)
+        while deque:
+            node = deque.popleft()
+            if node.state_as_string == state_hash:
+                found_nodes.append(node)
+            for node_action in node.actions:
+                if node_action.next_state and state_hash in node_action.next_state:
+                    found_nodes.append(node_action.next_state[state_hash])
+                else:
+                    deque.extend(node_action.next_state.values())
+        return found_nodes
 
 
 class MCTSPlayer(IStrategy):
@@ -166,10 +172,18 @@ class MCTSPlayer(IStrategy):
     def get_or_make_mcts(self, s):
         state_hash = get_hash(s, self.env.curTurn)
         if state_hash not in self.cache:
+            nodes = self.collect_nodes(state_hash)
             self.invalidate_cache()
             mcts = MonteCarloTreeSearch(self.env, self.agent, self.alpha, self.opponent, self.rollouts_per_update,
                                         self.ucb_c)
+            for node in nodes:
+                mcts.root.merge(node)
             mcts.search(self.search_cnt_per_state)
             self.cache[state_hash] = mcts
         return self.cache[state_hash]
 
+    def collect_nodes(self, target_state_hash):
+        nodes = []
+        for state_hash, mcts in self.cache.items():
+            nodes += mcts.find_nodes(target_state_hash)
+        return nodes

@@ -8,6 +8,17 @@ from matplotlib import pyplot as plt
 N_ROWS, N_COLS, N_WIN = 3, 3, 3
 
 
+def get_hash(state: np.array, cur_turn):
+    def draw(x):
+        if x == 0:
+            return 1
+        elif cur_turn == x:
+            return 2
+        else:
+            return 3
+    return ''.join(['%s' % draw(x) for x in state.flatten()])
+
+
 class TicTacToe(gym.Env):
     def __init__(self, n_rows=N_ROWS, n_cols=N_COLS, n_win=N_WIN, clone=None):
         if clone is not None:
@@ -35,15 +46,8 @@ class TicTacToe(gym.Env):
         self.boardHash = None
 
     def getHash(self):
-        def draw(x):
-            if x == 0:
-                return 1
-            elif self.curTurn == x:
-                return 2
-            else:
-                return 3
         if self.boardHash is None:
-            self.boardHash = ''.join(['%s' % draw(x) for x in self.board.reshape(self.n_rows * self.n_cols)])
+            self.boardHash = get_hash(self.board, self.curTurn)
         return self.boardHash
 
     def isTerminal(self):
@@ -123,5 +127,11 @@ class TicTacToe(gym.Env):
 
     def is_wrong_action(self, reward):
         return reward < -5
+
+    def load(self, board, turn):
+        self.board = board
+        self.curTurn = turn
+        self.emptySpaces = None
+        self.boardHash = None
 
 

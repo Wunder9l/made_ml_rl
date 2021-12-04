@@ -15,8 +15,8 @@ class IStrategy:
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def next_step(self, state):
-        """Return action for state"""
+    def get_proba(self, state, possible_actions):
+        """Return actions and their probability"""
 
     @abstractmethod
     def best_next_step(self, state, possible_actions):
@@ -34,24 +34,24 @@ class QStrategy(IStrategy):
         self.q = defaultdict(lambda: np.random.normal(mean, std))
 
     def pi(self, state, action):
-        return self.actions_proba(state)[action]
+        return self.get_proba(state)[action]
 
-    def actions_proba(self, state):
+    def get_proba(self, state, possible_actions=None):
         actions = list(self.possible_actions())
         weights = [self.q[(state, a)] for a in actions]
         weights = (1 - self.epsilon) * np.exp(weights) / np.sum(np.exp(weights)) + self.epsilon / self.actions_count
-        return {a: w for a, w in zip(actions, weights)}
+        return actions, weights
 
     def next_step(self, state):
         if random.random() < self.epsilon:
             return random.choice(list(self.possible_actions()))
         else:
-            actions_to_weights = self.actions_proba(state)
-            return random.choices(list(actions_to_weights.keys()), list(actions_to_weights.values()))[0]
+            actions, weights = self.get_proba(state)
+            return np.random.choice(actions, p=weights)
 
     def best_next_step(self, state, possible_actions=None):
-        actions_to_weights = self.actions_proba(state)
-        return max(actions_to_weights, key=actions_to_weights.get)
+        actions, weights = self.get_proba(state)
+        return actions[np.argmax(weights)]
 
     def copy(self):
         c = self.__class__(self.epsilon, self.rows, self.cols)
@@ -105,6 +105,9 @@ class RandomAgent(IStrategy):
             raise RuntimeError()
         return possible_actions[np.random.randint(len(possible_actions))]
 
+    def get_proba(self, s, possible_actions):
+        return possible_actions, np.ones(len(possible_actions)) / len(possible_actions)
+
 
 class BaseDQN(nn.Module):
     def __init__(self, output, device, lr):
@@ -113,10 +116,10 @@ class BaseDQN(nn.Module):
         self.device = device
         self.loss = nn.MSELoss()
 
-    def actions_proba(self, state, epsilon=0) -> torch.Tensor:
+    def get_proba(self, state, possible_actions=None) -> torch.Tensor:
         q_values = self.forward(state)
         weights = torch.softmax(q_values, -1)
-        return (1 - epsilon) * weights + epsilon / self.actions_count
+        return list(range(self.actions_count)), weights
 
     def update_q(self, state, action, done, reward, gamma, next_state):
         target = reward.to(self.device)
@@ -219,26 +222,7 @@ class DQNPlayerWrapper:
         action = int(q_values.argmax())
         return self.env.action_from_int(action)
 
-    def actions_proba(self, state):
+    def get_proba(self, state, _=None):
         q_values = self._get_predict()
         weights = q_values.numpy()
-        # weights = torch.softmax(q_values, -1).numpy()
-        return {self.env.action_from_int(a): w for a, w in enumerate(weights)}
-
-# class DQNAgent(QStrategy):
-#     def __init__(self, epsilon, rows, cols):
-#         super(DQNAgent, self).__init__(epsilon, rows, cols)
-#         self.model = MyNet(output=rows * cols)
-#
-#     def _run_model(self, state):
-#         return self.model(torch.tensor(state, dtype=torch.float32))
-#
-#     def actions_proba(self, state):
-#         actions = list(self.possible_actions())
-#         weights = torch.softmax(self._run_model(state))
-#         weights = (1 - self.epsilon) * np.exp(weights) / np.sum(np.exp(weights)) + self.epsilon / self.actions_count
-#         return {a: w for a, w in zip(actions, weights)}
-
-
-# class DuellingTrainer:
-#     def __init__(self, agent, critic):
+        return [self.env.action_from_int(a) for a in range(len(weights))], weights

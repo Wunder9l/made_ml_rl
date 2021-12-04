@@ -7,16 +7,17 @@ def plot_board(env, pi, showtext=True, verbose=True, fontq=20, fontx=60):
     fig, ax = plt.subplots(1, 1, figsize=(10, 10))
     X, Y = np.meshgrid(np.arange(0, env.n_rows), np.arange(0, env.n_rows))
     Z = np.zeros((env.n_rows, env.n_cols)) + .01
-    s, actions = env.getHash(), env.getEmptySpaces()
-    actions_proba = pi.actions_proba(s) if pi else None
-    if actions_proba is not None:
-        for a, p in actions_proba.items():
+    s, possible_actions = env.getPlayerBoard(), env.getEmptySpaces()
+    if pi:
+        actions, proba = pi.get_proba(s, possible_actions)
+        for a, p in zip(actions, proba):
             Z[a[0], a[1]] = p
     ax.set_xticks([])
     ax.set_yticks([])
     surf = ax.imshow(Z, cmap=plt.get_cmap('Accent', 10), vmin=-1, vmax=1)
-    if showtext and actions_proba:
-        for a, p in actions_proba.items():
+    if pi:
+        actions, proba = pi.get_proba(s, possible_actions)
+        for a, p in zip(actions, proba):
             ax.text( a[1] , a[0] , "%.3f" % p, fontsize=fontq, horizontalalignment='center', verticalalignment='center', color="w" )
     for i in range(env.n_rows):
         for j in range(env.n_cols):
@@ -43,7 +44,7 @@ def plot_test_game(env, pi1, pi2, random_crosses=False, random_naughts=True, ver
     done = False
     env.reset()
     while not done:
-        s, actions = env.getHash(), env.getEmptySpaces()
+        s, actions = env.getPlayerBoard(), env.getEmptySpaces()
         if env.curTurn == 1:
             a = get_and_print_move(env, pi1, s, actions, random=random_crosses, verbose=verbose, fontq=fontq, fontx=fontx)
         else:

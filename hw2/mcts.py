@@ -6,7 +6,7 @@ import numpy as np
 
 from agents import IStrategy
 from my_env import get_hash, TicTacToe
-from rollout import EPSILON, Rollout, RolloutStat
+from rollout import EPSILON, Rollout, RolloutStat, norm
 
 
 @dataclass
@@ -64,6 +64,7 @@ class MonteCarloTreeSearch(IStrategy):
         self.cur_turn = env.curTurn
         self.rollouts_per_update = rollouts_per_update
         self.root = Node(self.env.board, self.cur_turn)
+        self.node_bank = {self.root.state_as_string: self.root}
 
     def search(self, cnt):
         initial_state, initial_turn = self.env.board, self.env.curTurn
@@ -97,7 +98,7 @@ class MonteCarloTreeSearch(IStrategy):
                 return is_done, win, defeat, history, None
             state_hash = self.env.getHash()
             if state_hash not in action.next_state:
-                node = Node(self.env.board.copy(), self.env.curTurn)
+                node = self.node_bank.get(state_hash, Node(self.env.board.copy(), self.env.curTurn))
                 action.next_state[state_hash] = node
             else:
                 node = action.next_state[state_hash]
@@ -107,8 +108,8 @@ class MonteCarloTreeSearch(IStrategy):
         (_, possible_actions, _), reward, is_done, _ = self.env.step(action_node.action)
         if is_done:
             return is_done, reward > EPSILON, reward < -EPSILON
-        actions, proba = self.opponent.get_proba(self.env.getPlayerBoard(), possible_actions)
-        idx = np.random.choice(len(actions), p=proba)
+        actions, proba = self.opponent.get_proba(self.env.getHash(), possible_actions)
+        idx = np.random.choice(len(actions), p=norm(proba))
         _, reward, is_done, _ = self.env.step(actions[idx])
         return is_done, reward < -EPSILON, reward > EPSILON
 
@@ -120,7 +121,7 @@ class MonteCarloTreeSearch(IStrategy):
         rollout = Rollout(self.env, self.agent)
         possible_actions, probs, stats = rollout.make_rollouts(self.rollouts_per_update, ucb_c=self.ucb_c)
         rollout_actions = to_list_of_tuple(possible_actions)
-        agent_actions, agent_weights = self.agent.get_proba(self.env.getPlayerBoard(), self.env.getEmptySpaces())
+        agent_actions, agent_weights = self.agent.get_proba(self.env.getHash(), self.env.getEmptySpaces())
         actions_to_weights = {a: w for a, w in zip(to_list_of_tuple(agent_actions), agent_weights)}
         node.actions = []
         wins, defeats = 0, 0
@@ -131,19 +132,7 @@ class MonteCarloTreeSearch(IStrategy):
         return wins, defeats
 
     def find_nodes(self, state_hash):
-        found_nodes = []
-        deque = collections.deque()
-        deque.append(self.root)
-        while deque:
-            node = deque.popleft()
-            if node.state_as_string == state_hash:
-                found_nodes.append(node)
-            for node_action in node.actions:
-                if node_action.next_state and state_hash in node_action.next_state:
-                    found_nodes.append(node_action.next_state[state_hash])
-                else:
-                    deque.extend(node_action.next_state.values())
-        return found_nodes
+        return [self.node_bank[state_hash]] if state_hash in self.node_bank else []
 
 
 class MCTSPlayer(IStrategy):

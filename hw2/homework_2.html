@@ -16049,7 +16049,7 @@ Rollouts 100, mcts_cnt: 100, games 100, wins 98, ratio 0.98, took 378.28529s
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[85]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[86]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">(</span>
@@ -16058,9 +16058,7 @@ Rollouts 100, mcts_cnt: 100, games 100, wins 98, ratio 0.98, took 378.28529s
         <span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;rollouts_cnt&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">results</span><span class="p">],</span>
         <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;mcts_cnt&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">results</span><span class="p">],</span> <span class="p">)</span>
 <span class="p">)</span>
-<span class="n">fig</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span>
-    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Результаты игры MCTS от рандомного агента против этого агента&quot;</span><span class="p">,</span>
-<span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;Результаты игры MCTS от рандомного агента против этого агента&quot;</span><span class="p">,)</span>
 <span class="n">fig</span><span class="o">.</span><span class="n">update_xaxes</span><span class="p">(</span><span class="n">title_text</span><span class="o">=</span><span class="s2">&quot;rollouts&quot;</span><span class="p">)</span>
 <span class="n">fig</span><span class="o">.</span><span class="n">update_yaxes</span><span class="p">(</span><span class="n">title_text</span><span class="o">=</span><span class="s2">&quot;mcts_cnt&quot;</span><span class="p">)</span>
 <span class="n">fig</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
@@ -16088,11 +16086,477 @@ Rollouts 100, mcts_cnt: 100, games 100, wins 98, ratio 0.98, took 378.28529s
     scrolling="no"
     width="100%"
     height="545px"
-    src="iframe_figures/figure_85.html"
+    src="iframe_figures/figure_86.html"
     frameborder="0"
     allowfullscreen
 ></iframe>
 
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[87]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">reload</span><span class="p">(</span><span class="n">my_env</span><span class="p">),</span> <span class="n">reload</span><span class="p">(</span><span class="n">agents</span><span class="p">),</span> <span class="n">reload</span><span class="p">(</span><span class="n">utils</span><span class="p">),</span> <span class="n">reload</span><span class="p">(</span><span class="n">rollout</span><span class="p">),</span> <span class="n">reload</span><span class="p">(</span><span class="n">mcts</span><span class="p">),</span> <span class="n">reload</span><span class="p">(</span><span class="n">plot_utils</span><span class="p">)</span>
+<span class="n">N_ROWS</span><span class="p">,</span> <span class="n">N_COLS</span><span class="p">,</span> <span class="n">N_WINS</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span>
+<span class="n">env</span> <span class="o">=</span> <span class="n">my_env</span><span class="o">.</span><span class="n">TicTacToe</span><span class="p">(</span><span class="n">N_ROWS</span><span class="p">,</span> <span class="n">N_COLS</span><span class="p">,</span> <span class="n">N_WINS</span><span class="p">)</span>
+
+<span class="n">rollouts</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="n">mcts_counts</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">rollouts_cnt</span><span class="p">,</span> <span class="n">mcts_cnt</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">rollouts</span><span class="p">,</span> <span class="n">mcts_counts</span><span class="p">):</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time_ns</span><span class="p">()</span>
+    <span class="n">wins</span><span class="p">,</span> <span class="n">games</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">100</span>
+    <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+    <span class="n">mcts_player</span> <span class="o">=</span> <span class="n">mcts</span><span class="o">.</span><span class="n">MCTSPlayer</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">agents</span><span class="o">.</span><span class="n">RandomAgent</span><span class="p">(),</span> <span class="n">agents</span><span class="o">.</span><span class="n">RandomAgent</span><span class="p">(),</span> <span class="n">mcts_cnt</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">rollouts_per_update</span><span class="o">=</span><span class="n">rollouts_cnt</span><span class="p">,</span> <span class="n">ucb_c</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+    <span class="n">opponent</span> <span class="o">=</span> <span class="n">agents</span><span class="o">.</span><span class="n">RandomAgent</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">games</span><span class="p">):</span>
+        <span class="n">winner</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">play_one_episode</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">mcts_player</span><span class="p">,</span> <span class="n">opponent</span><span class="p">)</span>
+        <span class="n">wins</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="n">winner</span> <span class="o">==</span> <span class="n">mcts_player</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Rollouts </span><span class="si">{</span><span class="n">rollouts_cnt</span><span class="si">}</span><span class="s1">, mcts_cnt: </span><span class="si">{</span><span class="n">mcts_cnt</span><span class="si">}</span><span class="s1">, games </span><span class="si">{</span><span class="n">games</span><span class="si">}</span><span class="s1">, wins </span><span class="si">{</span><span class="n">wins</span><span class="si">}</span><span class="s1">, ratio </span><span class="si">{</span><span class="n">wins</span><span class="o">/</span><span class="n">games</span><span class="si">}</span><span class="s1">, took </span><span class="si">{</span><span class="p">(</span><span class="n">time_ns</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span><span class="o">/</span><span class="mf">1e9</span><span class="si">}</span><span class="s1">s&#39;</span><span class="p">)</span>
+    <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;rollouts_cnt&#39;</span><span class="p">:</span> <span class="n">rollouts_cnt</span><span class="p">,</span> <span class="s1">&#39;mcts_cnt&#39;</span><span class="p">:</span> <span class="n">mcts_cnt</span><span class="p">,</span> <span class="s1">&#39;wins_ratio&#39;</span><span class="p">:</span> <span class="n">wins</span> <span class="o">/</span> <span class="n">games</span><span class="p">})</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Rollouts 10, mcts_cnt: 10, games 100, wins 89, ratio 0.89, took 5.78833s
+Rollouts 10, mcts_cnt: 20, games 100, wins 86, ratio 0.86, took 9.947087s
+Rollouts 10, mcts_cnt: 30, games 100, wins 91, ratio 0.91, took 14.738442s
+Rollouts 10, mcts_cnt: 50, games 100, wins 93, ratio 0.93, took 23.729232s
+Rollouts 10, mcts_cnt: 100, games 100, wins 88, ratio 0.88, took 42.399759s
+Rollouts 20, mcts_cnt: 10, games 100, wins 91, ratio 0.91, took 11.613975s
+Rollouts 20, mcts_cnt: 20, games 100, wins 89, ratio 0.89, took 19.780827s
+Rollouts 20, mcts_cnt: 30, games 100, wins 88, ratio 0.88, took 29.54721s
+Rollouts 20, mcts_cnt: 50, games 100, wins 96, ratio 0.96, took 43.159699s
+Rollouts 20, mcts_cnt: 100, games 100, wins 94, ratio 0.94, took 82.202168s
+Rollouts 30, mcts_cnt: 10, games 100, wins 92, ratio 0.92, took 16.307986s
+Rollouts 30, mcts_cnt: 20, games 100, wins 93, ratio 0.93, took 31.271734s
+Rollouts 30, mcts_cnt: 30, games 100, wins 92, ratio 0.92, took 42.138166s
+Rollouts 30, mcts_cnt: 50, games 100, wins 96, ratio 0.96, took 66.860833s
+Rollouts 30, mcts_cnt: 100, games 100, wins 92, ratio 0.92, took 110.41411s
+Rollouts 50, mcts_cnt: 10, games 100, wins 91, ratio 0.91, took 112.176102s
+Rollouts 50, mcts_cnt: 20, games 100, wins 93, ratio 0.93, took 3828.787651s
+Rollouts 50, mcts_cnt: 30, games 100, wins 93, ratio 0.93, took 72.280619s
+Rollouts 50, mcts_cnt: 50, games 100, wins 93, ratio 0.93, took 108.28182s
+Rollouts 50, mcts_cnt: 100, games 100, wins 98, ratio 0.98, took 182.998853s
+Rollouts 100, mcts_cnt: 10, games 100, wins 84, ratio 0.84, took 55.806603s
+Rollouts 100, mcts_cnt: 20, games 100, wins 91, ratio 0.91, took 101.103663s
+Rollouts 100, mcts_cnt: 30, games 100, wins 92, ratio 0.92, took 144.462223s
+Rollouts 100, mcts_cnt: 50, games 100, wins 92, ratio 0.92, took 1250.57448s
+Rollouts 100, mcts_cnt: 100, games 100, wins 87, ratio 0.87, took 876.701806s
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="%D0%A1%D1%80%D0%B0%D0%B2%D0%BD%D0%B5%D0%BD%D0%B8%D0%B5-%D1%80%D0%B0%D0%B7%D0%BB%D0%B8%D1%87%D0%BD%D1%8B%D1%85-%D1%81%D1%82%D1%80%D0%B0%D1%82%D0%B5%D0%B3%D0%B8%D0%B9-%D0%BC%D0%B5%D0%B6%D0%B4%D1%83-%D1%81%D0%BE%D0%B1%D0%BE%D0%B9">&#1057;&#1088;&#1072;&#1074;&#1085;&#1077;&#1085;&#1080;&#1077; &#1088;&#1072;&#1079;&#1083;&#1080;&#1095;&#1085;&#1099;&#1093; &#1089;&#1090;&#1088;&#1072;&#1090;&#1077;&#1075;&#1080;&#1081; &#1084;&#1077;&#1078;&#1076;&#1091; &#1089;&#1086;&#1073;&#1086;&#1081;<a class="anchor-link" href="#%D0%A1%D1%80%D0%B0%D0%B2%D0%BD%D0%B5%D0%BD%D0%B8%D0%B5-%D1%80%D0%B0%D0%B7%D0%BB%D0%B8%D1%87%D0%BD%D1%8B%D1%85-%D1%81%D1%82%D1%80%D0%B0%D1%82%D0%B5%D0%B3%D0%B8%D0%B9-%D0%BC%D0%B5%D0%B6%D0%B4%D1%83-%D1%81%D0%BE%D0%B1%D0%BE%D0%B9">&#182;</a></h2>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[102]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">reload</span><span class="p">(</span><span class="n">my_env</span><span class="p">),</span> <span class="n">reload</span><span class="p">(</span><span class="n">agents</span><span class="p">),</span> <span class="n">reload</span><span class="p">(</span><span class="n">utils</span><span class="p">),</span> <span class="n">reload</span><span class="p">(</span><span class="n">rollout</span><span class="p">),</span> <span class="n">reload</span><span class="p">(</span><span class="n">mcts</span><span class="p">),</span> <span class="n">reload</span><span class="p">(</span><span class="n">plot_utils</span><span class="p">)</span>
+<span class="n">N_ROWS</span><span class="p">,</span> <span class="n">N_COLS</span><span class="p">,</span> <span class="n">N_WINS</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span>
+<span class="n">env</span> <span class="o">=</span> <span class="n">my_env</span><span class="o">.</span><span class="n">TicTacToe</span><span class="p">(</span><span class="n">N_ROWS</span><span class="p">,</span> <span class="n">N_COLS</span><span class="p">,</span> <span class="n">N_WINS</span><span class="p">)</span>
+
+<span class="n">q_agent</span> <span class="o">=</span> <span class="n">agents</span><span class="o">.</span><span class="n">QStrategy</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;q_agent.data&#39;</span><span class="p">)</span>
+<span class="n">dqn_agent</span> <span class="o">=</span> <span class="n">agents</span><span class="o">.</span><span class="n">DQNPlayerWrapper</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;dqn.data&#39;</span><span class="p">))</span>
+<span class="n">duelling_dqn_agent</span> <span class="o">=</span> <span class="n">agents</span><span class="o">.</span><span class="n">DQNPlayerWrapper</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;duelling_dqn.data&#39;</span><span class="p">))</span>
+<span class="n">random_agent</span> <span class="o">=</span> <span class="n">agents</span><span class="o">.</span><span class="n">RandomAgent</span><span class="p">()</span>
+
+<span class="n">mcts_cnt</span> <span class="o">=</span> <span class="mi">30</span>
+<span class="n">rollouts_cnt</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">players</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;random&#39;</span><span class="p">:</span> <span class="n">agents</span><span class="o">.</span><span class="n">RandomAgent</span><span class="p">(),</span>
+    <span class="s1">&#39;q_learning&#39;</span><span class="p">:</span> <span class="n">q_agent</span><span class="p">,</span>
+    <span class="s1">&#39;dqn&#39;</span><span class="p">:</span> <span class="n">dqn_agent</span><span class="p">,</span>
+    <span class="s1">&#39;duelling&#39;</span><span class="p">:</span> <span class="n">duelling_dqn_agent</span><span class="p">,</span>
+
+    <span class="s1">&#39;mcts_random&#39;</span><span class="p">:</span> <span class="n">mcts</span><span class="o">.</span><span class="n">MCTSPlayer</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">random_agent</span><span class="p">,</span> <span class="n">random_agent</span><span class="p">,</span> <span class="n">mcts_cnt</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">rollouts_per_update</span><span class="o">=</span><span class="n">rollouts_cnt</span><span class="p">,</span> <span class="n">ucb_c</span><span class="o">=</span><span class="mf">0.2</span><span class="p">),</span>
+    <span class="s1">&#39;mcts_q&#39;</span><span class="p">:</span> <span class="n">mcts</span><span class="o">.</span><span class="n">MCTSPlayer</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">q_agent</span><span class="p">,</span> <span class="n">random_agent</span><span class="p">,</span> <span class="n">mcts_cnt</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">rollouts_per_update</span><span class="o">=</span><span class="n">rollouts_cnt</span><span class="p">,</span> <span class="n">ucb_c</span><span class="o">=</span><span class="mf">0.2</span><span class="p">),</span>
+    <span class="s1">&#39;mcts_dqn_random&#39;</span><span class="p">:</span> <span class="n">mcts</span><span class="o">.</span><span class="n">MCTSPlayer</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">dqn_agent</span><span class="p">,</span> <span class="n">random_agent</span><span class="p">,</span> <span class="n">mcts_cnt</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">rollouts_per_update</span><span class="o">=</span><span class="n">rollouts_cnt</span><span class="p">,</span> <span class="n">ucb_c</span><span class="o">=</span><span class="mf">0.2</span><span class="p">),</span>
+    <span class="s1">&#39;mcts_duelling_dqn&#39;</span><span class="p">:</span> <span class="n">mcts</span><span class="o">.</span><span class="n">MCTSPlayer</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">duelling_dqn_agent</span><span class="p">,</span> <span class="n">random_agent</span><span class="p">,</span> <span class="n">mcts_cnt</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">rollouts_per_update</span><span class="o">=</span><span class="n">rollouts_cnt</span><span class="p">,</span> <span class="n">ucb_c</span><span class="o">=</span><span class="mf">0.2</span><span class="p">),</span>
+
+<span class="p">}</span>
+<span class="c1"># plot_test_game(env, players[&#39;mcts_dqn&#39;], players[&#39;random&#39;], random_crosses=False, random_naughts=False, verbose=False, fontx=60)</span>
+<span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span><span class="n">players</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="mi">2</span><span class="p">):</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time_ns</span><span class="p">()</span>
+    <span class="n">games</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="n">wins</span> <span class="o">=</span> <span class="p">{</span><span class="n">p1</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="n">p2</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+    <span class="n">player1</span><span class="p">,</span> <span class="n">player2</span> <span class="o">=</span> <span class="n">players</span><span class="p">[</span><span class="n">p1</span><span class="p">],</span> <span class="n">players</span><span class="p">[</span><span class="n">p2</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">games</span><span class="p">):</span>
+        <span class="n">winner</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">play_one_episode</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">player1</span><span class="p">,</span> <span class="n">player2</span><span class="p">)</span>
+        <span class="n">wins</span><span class="p">[</span><span class="n">p1</span><span class="p">]</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="n">winner</span> <span class="o">==</span> <span class="n">player1</span><span class="p">)</span>
+        <span class="n">wins</span><span class="p">[</span><span class="n">p2</span><span class="p">]</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="n">winner</span> <span class="o">==</span> <span class="n">player2</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Game </span><span class="si">{</span><span class="n">p1</span><span class="si">}</span><span class="s1">[</span><span class="si">{</span><span class="n">wins</span><span class="p">[</span><span class="n">p1</span><span class="p">]</span><span class="si">}</span><span class="s1">] - </span><span class="si">{</span><span class="n">p2</span><span class="si">}</span><span class="s1">[</span><span class="si">{</span><span class="n">wins</span><span class="p">[</span><span class="n">p2</span><span class="p">]</span><span class="si">}</span><span class="s1">], took </span><span class="si">{</span><span class="p">(</span><span class="n">time_ns</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span><span class="o">/</span><span class="mf">1e9</span><span class="si">}</span><span class="s1">s&#39;</span><span class="p">)</span>
+    <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;p1&#39;</span><span class="p">:</span> <span class="n">p1</span><span class="p">,</span> <span class="s1">&#39;p2&#39;</span><span class="p">:</span> <span class="n">p2</span><span class="p">,</span> <span class="s1">&#39;p1_wins&#39;</span><span class="p">:</span> <span class="n">wins</span><span class="p">[</span><span class="n">p1</span><span class="p">]</span> <span class="o">/</span> <span class="n">games</span><span class="p">,</span> <span class="s1">&#39;p2_wins&#39;</span><span class="p">:</span> <span class="n">wins</span><span class="p">[</span><span class="n">p2</span><span class="p">]</span> <span class="o">/</span> <span class="n">games</span><span class="p">,</span> <span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">time_ns</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span><span class="o">/</span><span class="mf">1e9</span><span class="p">})</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Game random[2] - q_learning[96], took 0.030021s
+Game random[26] - dqn[71], took 0.121519s
+Game random[10] - duelling[87], took 0.118964s
+Game random[5] - mcts_random[91], took 29.412153s
+Game random[6] - mcts_q[91], took 33.320306s
+Game random[6] - mcts_dqn_random[91], took 87.546219s
+Game random[9] - mcts_duelling_dqn[88], took 85.328495s
+Game q_learning[100] - dqn[0], took 0.091732s
+Game q_learning[50] - duelling[0], took 0.125608s
+Game q_learning[60] - mcts_random[1], took 29.936384s
+Game q_learning[43] - mcts_q[0], took 32.313983s
+Game q_learning[91] - mcts_dqn_random[0], took 82.936261s
+Game q_learning[48] - mcts_duelling_dqn[0], took 85.882693s
+Game dqn[0] - duelling[100], took 0.195778s
+Game dqn[25] - mcts_random[71], took 29.142167s
+Game dqn[16] - mcts_q[81], took 30.280862s
+Game dqn[17] - mcts_dqn_random[80], took 83.571119s
+Game dqn[17] - mcts_duelling_dqn[80], took 80.353589s
+Game duelling[37] - mcts_random[44], took 29.767735s
+Game duelling[20] - mcts_q[58], took 32.619154s
+Game duelling[28] - mcts_dqn_random[58], took 92.367009s
+Game duelling[47] - mcts_duelling_dqn[48], took 83.935609s
+Game mcts_random[20] - mcts_q[52], took 61.094057s
+Game mcts_random[49] - mcts_dqn_random[34], took 116.157883s
+Game mcts_random[41] - mcts_duelling_dqn[38], took 112.263619s
+Game mcts_q[54] - mcts_dqn_random[23], took 119.124722s
+Game mcts_q[45] - mcts_duelling_dqn[24], took 116.875637s
+Game mcts_dqn_random[48] - mcts_duelling_dqn[29], took 170.011963s
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[104]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[104]:</div>
+
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>p1</th>
+      <th>p2</th>
+      <th>p1_wins</th>
+      <th>p2_wins</th>
+      <th>time</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>random</td>
+      <td>q_learning</td>
+      <td>0.02</td>
+      <td>0.96</td>
+      <td>0.030155</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>random</td>
+      <td>dqn</td>
+      <td>0.26</td>
+      <td>0.71</td>
+      <td>0.121568</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>random</td>
+      <td>duelling</td>
+      <td>0.10</td>
+      <td>0.87</td>
+      <td>0.119040</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>random</td>
+      <td>mcts_random</td>
+      <td>0.05</td>
+      <td>0.91</td>
+      <td>29.412229</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>random</td>
+      <td>mcts_q</td>
+      <td>0.06</td>
+      <td>0.91</td>
+      <td>33.323783</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>random</td>
+      <td>mcts_dqn_random</td>
+      <td>0.06</td>
+      <td>0.91</td>
+      <td>87.546529</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>random</td>
+      <td>mcts_duelling_dqn</td>
+      <td>0.09</td>
+      <td>0.88</td>
+      <td>85.328573</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>q_learning</td>
+      <td>dqn</td>
+      <td>1.00</td>
+      <td>0.00</td>
+      <td>0.091769</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>q_learning</td>
+      <td>duelling</td>
+      <td>0.50</td>
+      <td>0.00</td>
+      <td>0.125658</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>q_learning</td>
+      <td>mcts_random</td>
+      <td>0.60</td>
+      <td>0.01</td>
+      <td>29.936464</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>q_learning</td>
+      <td>mcts_q</td>
+      <td>0.43</td>
+      <td>0.00</td>
+      <td>32.314062</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>q_learning</td>
+      <td>mcts_dqn_random</td>
+      <td>0.91</td>
+      <td>0.00</td>
+      <td>82.936591</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>q_learning</td>
+      <td>mcts_duelling_dqn</td>
+      <td>0.48</td>
+      <td>0.00</td>
+      <td>85.882761</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>dqn</td>
+      <td>duelling</td>
+      <td>0.00</td>
+      <td>1.00</td>
+      <td>0.195852</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>dqn</td>
+      <td>mcts_random</td>
+      <td>0.25</td>
+      <td>0.71</td>
+      <td>29.142249</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>dqn</td>
+      <td>mcts_q</td>
+      <td>0.16</td>
+      <td>0.81</td>
+      <td>30.280968</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>dqn</td>
+      <td>mcts_dqn_random</td>
+      <td>0.17</td>
+      <td>0.80</td>
+      <td>83.571314</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>dqn</td>
+      <td>mcts_duelling_dqn</td>
+      <td>0.17</td>
+      <td>0.80</td>
+      <td>80.353687</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>duelling</td>
+      <td>mcts_random</td>
+      <td>0.37</td>
+      <td>0.44</td>
+      <td>29.767894</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>duelling</td>
+      <td>mcts_q</td>
+      <td>0.20</td>
+      <td>0.58</td>
+      <td>32.619232</td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>duelling</td>
+      <td>mcts_dqn_random</td>
+      <td>0.28</td>
+      <td>0.58</td>
+      <td>92.367168</td>
+    </tr>
+    <tr>
+      <th>21</th>
+      <td>duelling</td>
+      <td>mcts_duelling_dqn</td>
+      <td>0.47</td>
+      <td>0.48</td>
+      <td>83.935888</td>
+    </tr>
+    <tr>
+      <th>22</th>
+      <td>mcts_random</td>
+      <td>mcts_q</td>
+      <td>0.20</td>
+      <td>0.52</td>
+      <td>61.094156</td>
+    </tr>
+    <tr>
+      <th>23</th>
+      <td>mcts_random</td>
+      <td>mcts_dqn_random</td>
+      <td>0.49</td>
+      <td>0.34</td>
+      <td>116.158029</td>
+    </tr>
+    <tr>
+      <th>24</th>
+      <td>mcts_random</td>
+      <td>mcts_duelling_dqn</td>
+      <td>0.41</td>
+      <td>0.38</td>
+      <td>112.263712</td>
+    </tr>
+    <tr>
+      <th>25</th>
+      <td>mcts_q</td>
+      <td>mcts_dqn_random</td>
+      <td>0.54</td>
+      <td>0.23</td>
+      <td>119.124804</td>
+    </tr>
+    <tr>
+      <th>26</th>
+      <td>mcts_q</td>
+      <td>mcts_duelling_dqn</td>
+      <td>0.45</td>
+      <td>0.24</td>
+      <td>116.875907</td>
+    </tr>
+    <tr>
+      <th>27</th>
+      <td>mcts_dqn_random</td>
+      <td>mcts_duelling_dqn</td>
+      <td>0.48</td>
+      <td>0.29</td>
+      <td>170.012061</td>
+    </tr>
+  </tbody>
+</table>
+</div>
 </div>
 
 </div>

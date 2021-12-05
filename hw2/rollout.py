@@ -8,6 +8,13 @@ import numpy as np
 EPSILON = 1e-8
 
 
+def norm(weights: np.array):
+    if weights.min() < EPSILON:
+        weights += (-weights.min() + 2 * EPSILON)
+    weights = weights / weights.sum()
+    return weights
+
+
 @dataclass
 class RolloutStat:
     games: int = 0
@@ -65,12 +72,7 @@ class Rollout:
     @staticmethod
     def get_probs(stats, total, ucb_c):
         probs = np.array([st.get_ucb(total=total, c=ucb_c) for st in stats])
-        if probs.min() < EPSILON:
-            probs += (-probs.min() + 2 * EPSILON)
-        probs = probs / probs.sum()
-        if np.isnan(np.min(probs)):
-            raise RuntimeError
-        return probs
+        return norm(probs)
 
     def _simulate(self, action):
         env = deepcopy(self.env)
@@ -80,7 +82,7 @@ class Rollout:
             if is_finished:
                 break
             actions, weights = self.agent.get_proba(s, possible_actions)
-            action_idx = np.random.choice(len(actions), p=weights)
+            action_idx = np.random.choice(len(actions), p=norm(weights))
             action = actions[action_idx]
         if reward > 0:
             is_win = turn == env.curTurn
